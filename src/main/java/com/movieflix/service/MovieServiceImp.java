@@ -2,6 +2,8 @@ package com.movieflix.service;
 
 import com.movieflix.dto.MovieDto;
 import com.movieflix.entities.Movie;
+import com.movieflix.exceptions.FileExistsException;
+import com.movieflix.exceptions.MovieNotFoundException;
 import com.movieflix.repositories.MovieRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,7 +39,7 @@ public class MovieServiceImp implements MovieService {
     public MovieDto addMovie(MovieDto movieDto, MultipartFile file) throws IOException {
 
        if (Files.exists(Paths.get(path + File.separator + file.getOriginalFilename()))) {
-           throw new RuntimeException("File already exists");
+           throw new FileExistsException("File already exists");
        }
        String uploadedFileName = fileService.uploadFile(path,file);
 
@@ -77,7 +79,7 @@ public class MovieServiceImp implements MovieService {
 
     @Override
     public MovieDto getMovie(Integer movieId) {
-       Movie movie= movieRepository.findById(movieId).orElseThrow(() -> new RuntimeException("Movie not found"));
+       Movie movie= movieRepository.findById(movieId).orElseThrow(() -> new MovieNotFoundException("Movie not found with id " + movieId));
 
        String posterUrl = baseUrl + "/file/" + movie.getPoster();
         MovieDto response = new MovieDto(
@@ -118,10 +120,14 @@ public class MovieServiceImp implements MovieService {
 
     @Override
     public MovieDto updateMovie(Integer movieId, MovieDto movieDto, MultipartFile file) throws IOException {
-        Movie mv= movieRepository.findById(movieId).orElseThrow(() -> new RuntimeException("Movie not found"));
+        //ovieId ile eşleşen bir filmi bulur ve varsa Optional<Movie> şeklinde döner.
+        Movie mv= movieRepository.findById(movieId).orElseThrow(() -> new MovieNotFoundException("Movie not found with id " + movieId));
+
 
         String fileName =mv.getPoster();
+
         if (file != null) {
+            // Bu yöntem, belirtilen dosyayı silmeye çalışır. deleteIfExists kullanıldığında, dosya varsa silinir ve işlem başarılı bir şekilde tamamlanırsa true döner.
             Files.deleteIfExists(Paths.get(path +File.separator + fileName));
             fileName = fileService.uploadFile(path ,file);
         }
@@ -159,7 +165,7 @@ public class MovieServiceImp implements MovieService {
 
     @Override
     public String deleteMovie(Integer movieId) throws IOException {
-        Movie mv= movieRepository.findById(movieId).orElseThrow(() -> new RuntimeException("Movie not found"));
+        Movie mv= movieRepository.findById(movieId).orElseThrow(() -> new MovieNotFoundException("Movie not found with id " + movieId));
 
         Files.deleteIfExists(Paths.get(path + File.separator+ mv.getPoster()));
         Integer id =  mv.getMovieId();
