@@ -22,7 +22,9 @@ public class FileServiceImpl implements  FileService{
             f.mkdirs();
         }
 
-        Files.copy(file.getInputStream(), Paths.get(filePath), StandardCopyOption.REPLACE_EXISTING); //Dosyayı belirtilen yola kopyalar. Eğer dosya zaten varsa, üzerine yazar.
+        //file.getInputStream() ile elde edilen dosya içeriğini Paths.get(filePath) ile belirtilen yol ve dosya adıyla oluşturulmuş bir dosyaya kopyalar.
+        Files.copy(file.getInputStream(), Paths.get(filePath)); //Dosyayı belirtilen yola kopyalar. Eğer dosya zaten varsa, üzerine yazar.
+
 
         //file.getInputStream(): MultipartFile nesnesinden dosya içeriğini okumak için kullanılan InputStream.
         //Paths.get(filePath): Kopyalanacak dosyanın hedef yolunu ve adını belirten bir Path nesnesi. filePath, dosyanın kaydedileceği dizin ve dosya adını içerir.

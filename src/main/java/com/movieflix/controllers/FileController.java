@@ -36,7 +36,7 @@ public class FileController {
     @GetMapping("/{fileName}")
     public void serveFileHandler(@PathVariable String fileName , HttpServletResponse response) throws IOException {
         InputStream resourceFile = fileService.getResourceFile(path,fileName);
-        response.setContentType(MediaType.IMAGE_PNG_VALUE);
+        response.setContentType(MediaType.IMAGE_PNG_VALUE); // type image olarak belirledik.
         StreamUtils.copy(resourceFile,response.getOutputStream()); // satırıyla dosya içeriği HTTP yanıtının OutputStream'ine yazılır.
     }
 
