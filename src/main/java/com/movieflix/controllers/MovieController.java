@@ -3,11 +3,14 @@ package com.movieflix.controllers;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.movieflix.dto.MovieDto;
+import com.movieflix.dto.MoviePageResponse;
 import com.movieflix.entities.Movie;
 import com.movieflix.exceptions.EmptyFileException;
 import com.movieflix.service.MovieService;
+import com.movieflix.utils.AppConstants;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,6 +26,7 @@ public class MovieController {
         this.movieService = movieService;
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @PostMapping("/add-movie")
     public ResponseEntity<MovieDto> addMovieHandler(@RequestPart MultipartFile file , @RequestPart String movieDto) throws IOException, EmptyFileException {
 
@@ -41,6 +45,7 @@ public class MovieController {
         return objectMapper.readValue(movieDtoObj , MovieDto.class); //Bu metot, gelen JSON dizesini MovieDto nesnesine dönüştürür.
     }
 
+    @PreAuthorize("hasAuthority('ADMIN')")
     @GetMapping("/{movieId}")
     public ResponseEntity<MovieDto> getMovieHandler(@PathVariable Integer movieId){
         return  ResponseEntity.ok(movieService.getMovie(movieId));
@@ -62,7 +67,36 @@ public class MovieController {
        return  ResponseEntity.ok(movieService.deleteMovie(movieId));
 
     }
+    @GetMapping("/allMoviesPagination")
+    //@RequestParam: Bu anotasyon, URL'deki query parametrelerini alır. defaultValue parametresi ise, değer verilmediğinde kullanılacak varsayılan değeri belirtir.
+    public ResponseEntity<MoviePageResponse> getMoviesWithPagination(@RequestParam(defaultValue = AppConstants.PAGE_NUMBER,required = false) Integer pageNumber,
+                                                                     @RequestParam (defaultValue = AppConstants.PAGE_SIZE,required = false) Integer pageSize){
+        return ResponseEntity.ok(movieService.getAllMoviesWithPagination(pageNumber,pageSize));
+    }
+
+    @GetMapping("/allMoviesPageSort")
+    public ResponseEntity<MoviePageResponse> getMoviesWithPaginationAndSorting(
+            @RequestParam(defaultValue = AppConstants.PAGE_NUMBER,required = false) Integer pageNumber,
+            @RequestParam (defaultValue = AppConstants.PAGE_SIZE,required = false) Integer pageSize,
+            @RequestParam(defaultValue = AppConstants.SORT_BY,required = false) String sortBy,
+            @RequestParam(defaultValue = AppConstants.SORT_DIR,required = false) String dir
+    ){
+        return ResponseEntity.ok(movieService.getAllMoviesWithPaginationAndSorting(pageNumber,pageSize,sortBy,dir));
+    }
 
 
 
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
